@@ -6,11 +6,27 @@ timestamp_directories: false
 timestamp_files: false
 
 downloads:
-  sftp: []
+  sftp: 
+    - host: localhost
+      port: 2222
+      username: foo
+      password: pass
+      key: ""
+      path: "/home/foo/downloads"
+      max_age: "168h"
+
   s3: []
 
 uploads:
-  sftp: []
+  sftp:
+    - host: localhost
+      port: 2222
+      username: foo
+      password: pass
+      key: ""
+      path: "/home/foo/uploads"
+      max_age: "168h"
+      
   s3: []
   email: []
   #  enabled: true

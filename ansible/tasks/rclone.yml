@@ -6,22 +6,16 @@
   shell: rclone config file
   register: _rclone_config
 
-
-- name: pull sftp / rclone configuration
+- name: pull rclone configuration
   set_fact:
     rclone_config: "{{ _rclone_config.stdout_lines[1] }}"
-    
-- name: encrypt sftp password
-  shell: |
-    rclone obscure '{{ sftp_plaintext_pass }}' > {{ sftp_pass_file }}
-  when: sftp_plaintext_pass != 'unset'
 
 - name: template rclone config
   template:
     src: templates/rclone_sftp.j2
     dest: "{{ rclone_config }}"
     mode: 0600
-  no_log: true
+  # no_log: true
 
 - name: Set RClone Flags
   set_fact: 
@@ -51,11 +45,6 @@
       - "{{ rclone_results.stdout_lines }}"
       - "stderr"
       - "{{ rclone_results.stderr_lines }}"
-
-- name: Remove sftp_pass_file
-  file:
-    path: "{{ sftp_pass_file }}"
-    state: absent
 
 - name: Remove rclone_config
   file:

@@ -1,0 +1,15 @@
+---
+version: '3.7'
+services:
+  sftp:
+    image: atmoz/sftp
+    volumes:
+      - sftp_downloads:/home/foo/downloads
+      - sftp_uploads:/home/foo/uploads
+    ports:
+      - 2222:22
+    command: foo:pass:1001
+
+volumes: 
+  sftp_downloads: {}
+  sftp_uploads: {}

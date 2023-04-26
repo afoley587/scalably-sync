@@ -1,11 +1,11 @@
 [sftp]
 type = sftp
 host = {{ sftp_host }}
-user = {{ sftp_user }}
-port = 22
-{% if sftp_plaintext_pass != 'unset' %}
-pass = {{ lookup('file', sftp_pass_file) }}
+user = {{ sftp_username }}
+port = {{ sftp_port | default(22, True) }}
+{% if sftp_password is defined and sftp_password != "" %}
+pass = {{ lookup('file', sftp_pass_file.path) }}
 {% else %}
-key_file = {{ sftp_key_file }}
+key_file = {{ sftp_key_file.path }}
 {% endif %}
 set_modtime = false

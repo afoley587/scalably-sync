@@ -1,7 +1,8 @@
 ---
 # yamllint disable rule:comments-indentation
 # yamllint disable rule:line-length
-- name: Tableau Automation
+
+- name: Sync Automation
   hosts: localhost
   gather_facts: true
 
@@ -19,32 +20,38 @@
         default_max_age: "168h" # one week
 
   tasks:
-
-    - name: downloads from external S3 buckets
-      include_tasks: tasks/s3.yml
-      when: downloads.s3 is defined and (downloads.s3 | length) > 0
-      vars:
-        local_path: "{{ sync_dir.path }}"
-        use_date_folder: false
-        direction: "download"
-        decompress: true
-        max_age: "{{ item.max_age | default(default_max_age, True) }}"
-      with_items: "{{ downloads.sftp }}"
+    # - name: downloads from external S3 buckets
+    #   include_tasks: tasks/s3.yml
+    #   when: downloads.s3 is defined and (downloads.s3 | length) > 0
+    #   vars:
+    #     local_path: "{{ sync_dir.path }}"
+    #     use_date_folder: false
+    #     direction: "download"
+    #     decompress: true
+    #     max_age: "{{ item.max_age | default(default_max_age, True) }}"
+    #   with_items: "{{ downloads.sftp }}"
 
     - name: downloads from external SFTP sites
       include_tasks: tasks/sftp.yml
       when: downloads.sftp is defined and (downloads.sftp | length) > 0
       vars:
         local_path: "{{ sync_dir.path }}"
-        use_date_folder: false
+        sftp_path: "{{ sftp.path }}"
+        sftp_host: "{{ sftp.host }}"
+        sftp_port: "{{ sftp.port }}"
+        sftp_username: "{{ sftp.username }}"
+        sftp_password: "{{ sftp.password }}"
+        sftp_key: "{{ sftp.key }}"
         direction: "download"
-        decompress: true
-        max_age: "{{ item.max_age | default(default_max_age, True) }}"
+        max_age: "{{ sftp.max_age | default(default_max_age, True) }}"
       with_items: "{{ downloads.sftp }}"
+      loop_control:
+        loop_var: "sftp"
+        label: "{{ sftp.host }}:{{ sftp.port }}"
 
     - name: upload to SFTP
       include_tasks: tasks/sftp.yml
-      when: uploads.sftp is defined and uploads.sftp.enabled | bool
+      when: uploads.sftp is defined and (uploads.sftp | length) > 0
       vars:
         local_path: "{{ sync_dir.path }}"
         use_date_folder: "{{ timestamp_directories }}"
@@ -53,7 +60,7 @@
 
     - name: upload to Emails
       include_tasks: tasks/email.yml
-      when: uploads.email is defined and uploads.email.enabled | bool
+      when: uploads.email is defined and (uploads.email | length) > 0
       vars:
         report_recipients: "{{ uploads.email.recipients }}"
         email_dir: "{{ sync_dir.path }}"
