@@ -1,0 +1,13 @@
+---
+
+timestamp_directories: false
+timestamp_files: false
+
+downloads:
+  sftp: []
+  s3: []
+
+uploads:
+  sftp: []
+  email: []
+  s3: []

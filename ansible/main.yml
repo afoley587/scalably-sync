@@ -1,0 +1,59 @@
+---
+# yamllint disable rule:comments-indentation
+# yamllint disable rule:line-length
+- name: Tableau Automation
+  hosts: localhost
+  gather_facts: true
+
+  pre_tasks:
+    - name: Include vars file
+      include_vars: "vars/{{ lookup('env', 'VARS_FILE') }}"
+
+    - name: Create temporary sync directory
+      tempfile:
+        state: directory
+      register: sync_dir
+    
+    - name: default settings
+      set_fact: 
+        default_max_age: "168h" # one week
+
+  tasks:
+
+    - name: downloads from external S3 buckets
+      include_tasks: tasks/s3.yml
+      when: downloads.s3 is defined and (downloads.s3 | length) > 0
+      vars:
+        local_path: "{{ sync_dir.path }}"
+        use_date_folder: false
+        direction: "download"
+        decompress: true
+        max_age: "{{ item.max_age | default(default_max_age, True) }}"
+      with_items: "{{ downloads.sftp }}"
+
+    - name: downloads from external SFTP sites
+      include_tasks: tasks/sftp.yml
+      when: downloads.sftp is defined and (downloads.sftp | length) > 0
+      vars:
+        local_path: "{{ sync_dir.path }}"
+        use_date_folder: false
+        direction: "download"
+        decompress: true
+        max_age: "{{ item.max_age | default(default_max_age, True) }}"
+      with_items: "{{ downloads.sftp }}"
+
+    - name: upload to SFTP
+      include_tasks: tasks/sftp.yml
+      when: uploads.sftp is defined and uploads.sftp.enabled | bool
+      vars:
+        local_path: "{{ sync_dir.path }}"
+        use_date_folder: "{{ timestamp_directories }}"
+        direction: "upload"
+        decompress: false
+
+    - name: upload to Emails
+      include_tasks: tasks/email.yml
+      when: uploads.email is defined and uploads.email.enabled | bool
+      vars:
+        report_recipients: "{{ uploads.email.recipients }}"
+        email_dir: "{{ sync_dir.path }}"

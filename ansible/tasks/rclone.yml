@@ -1,0 +1,63 @@
+---
+# yamllint disable rule:line-length
+# yamllint disable rule:comments
+
+- name: Find Rclone config file location
+  shell: rclone config file
+  register: _rclone_config
+
+
+- name: pull sftp / rclone configuration
+  set_fact:
+    rclone_config: "{{ _rclone_config.stdout_lines[1] }}"
+    
+- name: encrypt sftp password
+  shell: |
+    rclone obscure '{{ sftp_plaintext_pass }}' > {{ sftp_pass_file }}
+  when: sftp_plaintext_pass != 'unset'
+
+- name: template rclone config
+  template:
+    src: templates/rclone_sftp.j2
+    dest: "{{ rclone_config }}"
+    mode: 0600
+  no_log: true
+
+- name: Set RClone Flags
+  set_fact: 
+    # blackline has some SUPER slow SFTP which seems to cause 
+    # problems with concurrency
+    rclone_flags: "--config {{ rclone_config }} --contimeout=2m0s"
+
+- name: Set RClone Command
+  set_fact:
+    rclone_cmd: >-
+      rclone
+      {% if direction == 'download' %}
+      copy "sftp:{{ sftp_path }}" "{{ local_path }}" {{ rclone_flags }} --max-age {{ max_age }}
+      {% else %}
+      sync "{{ local_path }}" "sftp:{{ sftp_path }}" {{ rclone_flags }}
+      {% endif %}
+
+- name: Run the sync
+  shell: |
+    {{ rclone_cmd }}
+  register: rclone_results
+
+- name: Show run results
+  debug:
+    msg:
+      - "stdout"
+      - "{{ rclone_results.stdout_lines }}"
+      - "stderr"
+      - "{{ rclone_results.stderr_lines }}"
+
+- name: Remove sftp_pass_file
+  file:
+    path: "{{ sftp_pass_file }}"
+    state: absent
+
+- name: Remove rclone_config
+  file:
+    path: "{{ rclone_config }}"
+    state: absent

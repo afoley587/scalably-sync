@@ -1,0 +1,39 @@
+---
+- name: Find file attachments
+  find:
+    paths: "{{ email_dir }}"
+    pattern: "*"
+  register: _reports_to_attach
+
+- name: Extract filenames from reports
+  set_fact:
+    reports_to_attach: "{{
+        _reports_to_attach.files |
+        map(attribute='path') |
+        list
+      }}"
+
+- name: show files to attach
+  debug:
+    msg:
+      - "{{ reports_to_attach }}"
+
+- name: Render Email Template
+  template:
+    src: templates/email_template.html.j2
+    dest: /tmp/email_template.html
+
+- name: Sending an e-mail using Gmail SMTP servers
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: "{{ lookup('env', 'REPORTING_FROM_EMAIL') }}"
+    password: "{{ lookup('env', 'REPORTING_EMAIL_PASS') }}"
+    to: "{{ item.name }} <{{ item.email }}>"
+    subject: Generated Reports - {{ ansible_date_time.date }}
+    body: "{{ lookup('file', '/tmp/email_template.html') }}"
+    attach: "{{ reports_to_attach | list }}"
+    subtype: html
+  with_items: "{{ report_recipients }}"
+  loop_control:
+    label: "{{ item.email }}"

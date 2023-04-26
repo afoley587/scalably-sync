@@ -1,0 +1,42 @@
+---
+# yamllint disable rule:line-length
+# yamllint disable rule:comments
+
+- name: pull sftp / rclone configuration
+  set_fact:
+    sftp_key_file: "/tmp/sftp"
+    sftp_pass_file: "/tmp/sftp_pass"
+
+- name: Parse configuration secrets
+  set_fact:
+    sftp_user: "{{ sftp_details.SFTP_USER }}"
+    sftp_host: "{{ sftp_details.SFTP_HOST }}"
+    sftp_path: "{{ sftp_details.SFTP_PATH }}/{{ ansible_date_time.date if use_date_folder else '' }}"
+    sftp_private_key: "{{ sftp_details.PRIVATE_SSH_KEY | default('unset', True) }}"
+    sftp_plaintext_pass: "{{ sftp_details.SFTP_PASS | default('unset', True) }}"
+    skip_rclone: false
+
+- name: write key to file
+  copy:
+    content: "{{ sftp_private_key }}\n"
+    dest: "{{ sftp_key_file }}"
+    mode: 0600
+  no_log: true
+  when: sftp_private_key != 'unset'
+
+- name: Inlcude RClone Tasks
+  include_tasks: rclone.yml
+  when: not skip_rclone
+
+- name: Inlcude RClone Tasks
+  include_tasks: rawsftp.yml
+  when: skip_rclone
+
+- name: Remove sftp_key_file
+  file:
+    path: "{{ sftp_key_file }}"
+    state: absent
+
+- name: Decompress files if requested
+  include_tasks: decompress.yml
+  when: decompress | bool

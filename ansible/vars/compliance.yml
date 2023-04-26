@@ -1,0 +1,19 @@
+---
+# yamllint disable rule:comments
+# yamllint disable rule:line-length
+
+timestamp_directories: false
+timestamp_files: false
+
+downloads:
+  sftp: []
+  s3: []
+
+uploads:
+  sftp: []
+  s3: []
+  email: []
+  #  enabled: true
+  #  recipients:
+  #    - email: alexandergfoley@gmail.com
+  #      name: Compliance
