@@ -1,0 +1,8 @@
+[s3]
+type = s3
+provider = AWS
+env_auth = {{ s3_env_auth }}
+region = {{ s3_region }}
+{% if s3_endpoint is defined and s3_endpoint != "" %}
+endpoint = {{ s3_endpoint }}
+{% endif %}

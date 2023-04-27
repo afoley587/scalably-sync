@@ -12,7 +12,7 @@ downloads:
       username: foo
       password: pass
       key: ""
-      path: "/home/foo/downloads"
+      path: "/downloads"
       max_age: "168h"
 
   s3: []
@@ -24,10 +24,17 @@ uploads:
       username: foo
       password: pass
       key: ""
-      path: "/home/foo/uploads"
+      path: "/uploads"
       max_age: "168h"
-      
-  s3: []
+
+  s3:
+    - endpoint_url: https://localhost:4566
+      env_auth: true
+      access_key: ""
+      access_secret: ""
+      region: us-east-1
+      key_prefix: /
+      bucket: test
   email: []
   #  enabled: true
   #  recipients:

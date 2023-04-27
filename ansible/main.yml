@@ -54,9 +54,37 @@
       when: uploads.sftp is defined and (uploads.sftp | length) > 0
       vars:
         local_path: "{{ sync_dir.path }}"
-        use_date_folder: "{{ timestamp_directories }}"
+        sftp_path: "{{ sftp.path }}"
+        sftp_host: "{{ sftp.host }}"
+        sftp_port: "{{ sftp.port }}"
+        sftp_username: "{{ sftp.username }}"
+        sftp_password: "{{ sftp.password }}"
+        sftp_key: "{{ sftp.key }}"
+        direction: "direction"
+        max_age: "{{ sftp.max_age | default(default_max_age, True) }}"
+      with_items: "{{ uploads.sftp }}"
+      loop_control:
+        loop_var: "sftp"
+        label: "{{ sftp.host }}:{{ sftp.port }}"
+
+    - name: upload to S3 buckets
+      include_tasks: tasks/s3.yml
+      when: uploads.s3 is defined and (uploads.s3 | length) > 0
+      vars:
+        local_path: "{{ sync_dir.path }}"
+        use_date_folder: false
         direction: "upload"
-        decompress: false
+        decompress: true
+        s3_env_auth: "{{ s3.env_auth }}"
+        s3_region: "{{ s3.region }}"
+        s3_endpoint: "{{ s3.endpoint_url }}"
+        s3_key_prefix: "{{ s3.key_prefix }}"
+        s3_bucket: "{{ s3.bucket }}"
+        max_age: "{{ item.max_age | default(default_max_age, True) }}"
+      with_items: "{{ uploads.s3 }}"
+      loop_control:
+        loop_var: "s3"
+        # label: "{{ s3.host }}:{{ sftp.port }}"
 
     - name: upload to Emails
       include_tasks: tasks/email.yml

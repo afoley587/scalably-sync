@@ -12,26 +12,19 @@
 
 - name: template rclone config
   template:
-    src: templates/rclone_sftp.j2
+    src: "templates/{{ template }}"
     dest: "{{ rclone_config }}"
     mode: 0600
   # no_log: true
 
 - name: Set RClone Flags
-  set_fact: 
-    # blackline has some SUPER slow SFTP which seems to cause 
-    # problems with concurrency
-    rclone_flags: "--config {{ rclone_config }} --contimeout=2m0s"
+  set_fact:
+    rclone_flags: "--config {{ rclone_config }} --contimeout=2m0s --max-age {{ max_age }}"
 
 - name: Set RClone Command
   set_fact:
     rclone_cmd: >-
-      rclone
-      {% if direction == 'download' %}
-      copy "sftp:{{ sftp_path }}" "{{ local_path }}" {{ rclone_flags }} --max-age {{ max_age }}
-      {% else %}
-      sync "{{ local_path }}" "sftp:{{ sftp_path }}" {{ rclone_flags }}
-      {% endif %}
+      rclone {{ raw_rclone_cmd }} {{ rclone_flags }}
 
 - name: Run the sync
   shell: |

@@ -29,7 +29,16 @@
 
 - name: Inlcude RClone Tasks
   include_tasks: rclone.yml
+  vars:
+    template: "rclone_sftp.j2"
+    raw_rclone_cmd: >-
+      {% if direction == 'upload' %}
+      sync "{{ local_path }}" "sftp:{{ sftp_path }}"
+      {% else %}
+      copy "sftp:{{ sftp_path }}" "{{ local_path }}"
+      {% endif %}
 
+    
 - name: Remove sftp_key_file
   file:
     path: "{{ sftp_key_file.path }}"

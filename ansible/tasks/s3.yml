@@ -1,0 +1,14 @@
+---
+# yamllint disable rule:line-length
+# yamllint disable rule:comments
+
+- name: Inlcude RClone Tasks
+  include_tasks: rclone.yml
+  vars:
+    template: "rclone_s3.j2"
+    raw_rclone_cmd: >-
+      {% if direction == 'upload' %}
+      sync "{{ local_path }}" "s3:{{ s3_bucket }}/{{ s3_key_prefix }}"
+      {% else %}
+      copy "s3:{{ s3_bucket}}/{{ s3_key_prefix }}" "{{ local_path }}"
+      {% endif %}
