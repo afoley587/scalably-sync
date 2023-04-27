@@ -8,7 +8,7 @@
     template: "rclone_s3.j2"
     raw_rclone_cmd: >-
       {% if direction == 'upload' %}
-      sync "{{ local_path }}" "s3:{{ s3_bucket }}/{{ s3_key_prefix }}"
+      sync "{{ local_path }}" "s3:{{ s3_bucket }}/{{ s3_key_prefix }}" --s3-upload-concurrency=1
       {% else %}
-      copy "s3:{{ s3_bucket}}/{{ s3_key_prefix }}" "{{ local_path }}"
+      copy "s3:{{ s3_bucket}}/{{ s3_key_prefix }}" "{{ local_path }}" --s3-upload-concurrency=1
       {% endif %}

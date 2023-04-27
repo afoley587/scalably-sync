@@ -84,7 +84,7 @@
       with_items: "{{ uploads.s3 }}"
       loop_control:
         loop_var: "s3"
-        # label: "{{ s3.host }}:{{ sftp.port }}"
+        label: "{{ s3.bucket }}"
 
     - name: upload to Emails
       include_tasks: tasks/email.yml
