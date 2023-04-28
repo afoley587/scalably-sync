@@ -48,7 +48,7 @@
         loop_var: source
 
     - name: upload files to external sites
-      include_tasks: tasks/{{ source.type }}.yml
+      include_tasks: tasks/{{ sink.type }}.yml
       vars:
         local_path: "{{ sync_dir.path }}"
         config: "{{ sink.config }}"

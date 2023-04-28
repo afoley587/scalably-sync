@@ -43,3 +43,4 @@ uploads:
       key_prefix: /
       bucket: scalably-sync
       id: "s31"
+      max_age: "168h"
