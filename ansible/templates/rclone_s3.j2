@@ -2,6 +2,10 @@
 type = s3
 provider = AWS
 env_auth = {{ s3_env_auth }}
+{% if not s3_env_auth %}
+access_key = {{ s3_access_key }}
+access_secret = {{ s3_access_secret }}
+{% endif %}
 region = {{ s3_region }}
 {% if s3_endpoint is defined and s3_endpoint != "" %}
 endpoint = {{ s3_endpoint }}

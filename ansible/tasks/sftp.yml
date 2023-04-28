@@ -1,6 +1,14 @@
 ---
-# yamllint disable rule:line-length
-# yamllint disable rule:comments
+
+- name: Pull variables from config
+  set_fact:
+    sftp_host: "{{ config.host }}"
+    sftp_port: "{{ config.port }}"
+    sftp_username: "{{ config.username }}"
+    sftp_password: "{{ config.password }}"
+    sftp_key: "{{ config.key }}"
+    sftp_path: "{{ config.path }}"
+    max_age: "{{ config.max_age }}"
 
 - name: Create temporary key file
   tempfile:
@@ -38,7 +46,6 @@
       copy "sftp:{{ sftp_path }}" "{{ local_path }}"
       {% endif %}
 
-    
 - name: Remove sftp_key_file
   file:
     path: "{{ sftp_key_file.path }}"

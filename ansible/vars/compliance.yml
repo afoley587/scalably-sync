@@ -1,11 +1,7 @@
 ---
-# yamllint disable rule:comments
-# yamllint disable rule:line-length
-
-timestamp_directories: false
-timestamp_files: false
 
 downloads:
+
   sftp: 
     - host: localhost
       port: 2222
@@ -14,10 +10,21 @@ downloads:
       key: ""
       path: "/downloads"
       max_age: "168h"
+      id: "sftp1"
+
+    - host: localhost
+      port: 2222
+      username: foo
+      password: pass
+      key: ""
+      path: "/downloads"
+      max_age: "168h"
+      id: "sftp2"
 
   s3: []
 
 uploads:
+
   sftp:
     - host: localhost
       port: 2222
@@ -26,17 +33,13 @@ uploads:
       key: ""
       path: "/uploads"
       max_age: "168h"
+      id: "sftp3"
 
   s3:
-    - endpoint_url: http://localhost:4566
-      env_auth: true
+    - env_auth: true
       access_key: ""
       access_secret: ""
       region: us-east-1
       key_prefix: /
-      bucket: test
-  email: []
-  #  enabled: true
-  #  recipients:
-  #    - email: alexandergfoley@gmail.com
-  #      name: Compliance
+      bucket: scalably-sync
+      id: "s31"

@@ -1,7 +1,4 @@
 ---
-# yamllint disable rule:comments-indentation
-# yamllint disable rule:line-length
-
 - name: Sync Automation
   hosts: localhost
   gather_facts: true
@@ -20,75 +17,42 @@
         default_max_age: "168h" # one week
 
   tasks:
-    # - name: downloads from external S3 buckets
-    #   include_tasks: tasks/s3.yml
-    #   when: downloads.s3 is defined and (downloads.s3 | length) > 0
-    #   vars:
-    #     local_path: "{{ sync_dir.path }}"
-    #     use_date_folder: false
-    #     direction: "download"
-    #     decompress: true
-    #     max_age: "{{ item.max_age | default(default_max_age, True) }}"
-    #   with_items: "{{ downloads.sftp }}"
 
-    - name: downloads from external SFTP sites
-      include_tasks: tasks/sftp.yml
-      when: downloads.sftp is defined and (downloads.sftp | length) > 0
+    - name: Create iteratable sources and sinks
+      set_fact:
+        sources: |
+          {% set sources = [] %}
+          {% for type, configs in downloads.items() %}
+          {% for config in configs %}
+          {% set _ = sources.append({'type': type, 'config': config}) %}
+          {% endfor %}
+          {% endfor %}
+          {{ sources }}
+        sinks: |
+          {% set sinks = [] %}
+          {% for type, configs in uploads.items() %}
+          {% for config in configs %}
+          {% set _ = sinks.append({'type': type, 'config': config}) %}
+          {% endfor %}
+          {% endfor %}
+          {{ sinks }}
+
+    - name: downloads from external sites
+      include_tasks: tasks/{{ source.type }}.yml
       vars:
-        local_path: "{{ sync_dir.path }}"
-        sftp_path: "{{ sftp.path }}"
-        sftp_host: "{{ sftp.host }}"
-        sftp_port: "{{ sftp.port }}"
-        sftp_username: "{{ sftp.username }}"
-        sftp_password: "{{ sftp.password }}"
-        sftp_key: "{{ sftp.key }}"
+        local_path: "{{ sync_dir.path }}/{{ source.type }}_{{ source.config.id }}"
+        config: "{{ source.config }}"
         direction: "download"
-        max_age: "{{ sftp.max_age | default(default_max_age, True) }}"
-      with_items: "{{ downloads.sftp }}"
+      with_items: "{{ sources }}"
       loop_control:
-        loop_var: "sftp"
-        label: "{{ sftp.host }}:{{ sftp.port }}"
+        loop_var: source
 
-    - name: upload to SFTP
-      include_tasks: tasks/sftp.yml
-      when: uploads.sftp is defined and (uploads.sftp | length) > 0
+    - name: upload files to external sites
+      include_tasks: tasks/{{ source.type }}.yml
       vars:
         local_path: "{{ sync_dir.path }}"
-        sftp_path: "{{ sftp.path }}"
-        sftp_host: "{{ sftp.host }}"
-        sftp_port: "{{ sftp.port }}"
-        sftp_username: "{{ sftp.username }}"
-        sftp_password: "{{ sftp.password }}"
-        sftp_key: "{{ sftp.key }}"
-        direction: "direction"
-        max_age: "{{ sftp.max_age | default(default_max_age, True) }}"
-      with_items: "{{ uploads.sftp }}"
-      loop_control:
-        loop_var: "sftp"
-        label: "{{ sftp.host }}:{{ sftp.port }}"
-
-    - name: upload to S3 buckets
-      include_tasks: tasks/s3.yml
-      when: uploads.s3 is defined and (uploads.s3 | length) > 0
-      vars:
-        local_path: "{{ sync_dir.path }}"
-        use_date_folder: false
+        config: "{{ sink.config }}"
         direction: "upload"
-        decompress: true
-        s3_env_auth: "{{ s3.env_auth }}"
-        s3_region: "{{ s3.region }}"
-        s3_endpoint: "{{ s3.endpoint_url }}"
-        s3_key_prefix: "{{ s3.key_prefix }}"
-        s3_bucket: "{{ s3.bucket }}"
-        max_age: "{{ item.max_age | default(default_max_age, True) }}"
-      with_items: "{{ uploads.s3 }}"
+      with_items: "{{ sinks }}"
       loop_control:
-        loop_var: "s3"
-        label: "{{ s3.bucket }}"
-
-    - name: upload to Emails
-      include_tasks: tasks/email.yml
-      when: uploads.email is defined and (uploads.email | length) > 0
-      vars:
-        report_recipients: "{{ uploads.email.recipients }}"
-        email_dir: "{{ sync_dir.path }}"
+        loop_var: sink

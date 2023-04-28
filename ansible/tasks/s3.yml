@@ -1,11 +1,22 @@
 ---
+- name: Pull variables from config
+  set_fact:
+    s3_env_auth: "{{ config.env_auth }}"
+    s3_access_key: "{{ config.access_key }}"
+    s3_access_secret: "{{ config.access_secret }}"
+    s3_region: "{{ config.region }}"
+    s3_endpoint: "{{ config.key }}"
+    s3_bucket: "{{ config.bucket }}"
+    s3_key_prefix: "{{ config.key_prefix }}"
+    max_age: "{{ config.max_age }}"
+
 - name: Inlcude RClone Tasks
   include_tasks: rclone.yml
   vars:
     template: "rclone_s3.j2"
     raw_rclone_cmd: >-
       {% if direction == 'upload' %}
-      sync "{{ local_path }}" "s3:{{ s3_bucket }}/{{ s3_key_prefix }}"
+      sync "{{ local_path }}" "s3:{{ s3_bucket }}/{{ s3_bucket }}"
       {% else %}
       copy "s3:{{ s3_bucket }}/{{ s3_key_prefix }}" "{{ local_path }}"
       {% endif %}
