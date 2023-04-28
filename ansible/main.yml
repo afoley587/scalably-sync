@@ -11,10 +11,6 @@
       tempfile:
         state: directory
       register: sync_dir
-    
-    - name: default settings
-      set_fact: 
-        default_max_age: "168h" # one week
 
   tasks:
 
