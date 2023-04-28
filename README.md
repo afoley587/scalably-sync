@@ -4,12 +4,12 @@
 
 Are you absolutely fed up with all of these different CLIs, 
 syncing tools, and complex configurations? I love RSync, but I don't
-to have to manage RSync for some parts of my system and then use something like
+want to have to manage RSync for some parts of my system and then use something like
 the AWS cli for another part of my system! What if I'm multi-cloud? Do I need
 to maintain separate scripts for each cloud, on prem servers, google drives,
 and more?
 
-If only there was one tool that could do it all... enter [rclone]()! [Rclone]()
+If only there was one tool that could do it all... enter [rclone](https://rclone.org/)! [Rclone](https://rclone.org/)
 is one of my favorite syncing utilities because it's:
 
 * fast
@@ -102,7 +102,7 @@ look like:
 ```yaml
 downloads:
   sftp: [] # each SFTP to download FROM
-  s3: [] # each S# to download FROM
+  s3: [] # each to download FROM
 
 uploads:
   sftp: [] # each SFTP to upload TO
