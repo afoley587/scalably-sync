@@ -19,7 +19,7 @@
     content: "{{ sftp_key }}\n"
     dest: "{{ sftp_key_file.path }}"
     mode: 0600
-  # no_log: true
+  no_log: true
   when: sftp_key is defined and sftp_key != ""
 
 - name: encrypt sftp password

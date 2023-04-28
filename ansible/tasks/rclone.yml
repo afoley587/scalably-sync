@@ -1,7 +1,4 @@
 ---
-# yamllint disable rule:line-length
-# yamllint disable rule:comments
-
 - name: Find Rclone config file location
   shell: rclone config file
   register: _rclone_config
@@ -15,7 +12,7 @@
     src: "templates/{{ template }}"
     dest: "{{ rclone_config }}"
     mode: 0600
-  # no_log: true
+  no_log: true
 
 - name: Set RClone Flags
   set_fact:
